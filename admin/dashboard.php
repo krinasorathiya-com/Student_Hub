@@ -1,93 +1,49 @@
 
 <?php
-
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-
 session_start();
+require_once "../config/db.php";
 
-if (!isset($_SESSION['admin_id']) || ($_SESSION['admin_role'] ?? '') !== 'admin') {
+// Admin-only access
+if (
+    !isset($_SESSION['admin_id']) ||
+    ($_SESSION['admin_role'] ?? '') !== 'admin'
+) {
     header("Location: login.php");
     exit();
 }
 
-require_once "../config/db.php";
+$adminId = $_SESSION['admin_id'];
 
-// Count records safely
-function getCount($conn, $table) {
-    $allowed = ['users', 'students', 'events', 'registrations'];
+// Dashboard statistics
+$totalUsers = $conn->query("SELECT COUNT(*) AS total FROM users")->fetch_assoc()['total'];
 
-    if (!in_array($table, $allowed, true)) {
-        return 0;
-    }
+$totalStudents = $conn->query("SELECT COUNT(*) AS total FROM students")->fetch_assoc()['total'];
 
-    try {
-        $result = $conn->query("SELECT COUNT(*) AS total FROM `$table`");
-        return (int)$result->fetch_assoc()['total'];
-    } catch (Throwable $e) {
-        return 0;
-    }
-}
+$totalEvents = $conn->query("SELECT COUNT(*) AS total FROM events")->fetch_assoc()['total'];
 
-// Fetch latest records without assuming column names
-function getRecords($conn, $table) {
-    $allowed = ['registrations', 'audit_logs'];
+$totalRegistrations = $conn->query("SELECT COUNT(*) AS total FROM registrations")->fetch_assoc()['total'];
 
-    if (!in_array($table, $allowed, true)) {
-        return [];
-    }
+// Latest registrations
+$latest = $conn->query("
+    SELECT r.id, s.name AS student_name,
+           e.title AS event_title, r.registration_date
+    FROM registrations r
+    LEFT JOIN students s ON r.student_id = s.id
+    LEFT JOIN events e ON r.event_id = e.id
+    ORDER BY r.registration_date DESC
+    LIMIT 5
+");
 
-    try {
-        $result = $conn->query("SELECT * FROM `$table` LIMIT 5");
-        return $result->fetch_all(MYSQLI_ASSOC);
-    } catch (Throwable $e) {
-        return [];
-    }
-}
-
-$totalUsers = getCount($conn, 'users');
-$totalStudents = getCount($conn, 'students');
-$totalEvents = getCount($conn, 'events');
-$totalRegistrations = getCount($conn, 'registrations');
-
-$latestRegistrations = getRecords($conn, 'registrations');
-$auditLogs = getRecords($conn, 'audit_logs');
-
-function displayRecords($records) {
-    if (empty($records)) {
-        echo "<p>No records available.</p>";
-        return;
-    }
-
-    echo "<div class='table-wrap'><table><thead><tr>";
-
-    foreach (array_keys($records[0]) as $column) {
-        if (stripos($column, 'password') !== false) {
-            continue;
-        }
-        echo "<th>" . htmlspecialchars($column) . "</th>";
-    }
-
-    echo "</tr></thead><tbody>";
-
-    foreach ($records as $record) {
-        echo "<tr>";
-
-        foreach ($record as $column => $value) {
-            if (stripos($column, 'password') !== false) {
-                continue;
-            }
-
-            echo "<td>" . htmlspecialchars((string)($value ?? '')) . "</td>";
-        }
-
-        echo "</tr>";
-    }
-
-    echo "</tbody></table></div>";
-}
+// Latest audit logs
+$logs = $conn->query("
+    SELECT admin_id, action, details, created_at
+    FROM audit_logs
+    ORDER BY created_at DESC
+    LIMIT 10
+");
 ?>
 
 <!DOCTYPE html>
@@ -95,7 +51,6 @@ function displayRecords($records) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Admin Dashboard - Student Hub</title>
 
 <style>
@@ -104,9 +59,9 @@ function displayRecords($records) {
 }
 
 body {
-    margin: 0;
     font-family: Arial, sans-serif;
     background: #f1f5f9;
+    margin: 0;
 }
 
 .header {
@@ -121,9 +76,9 @@ body {
 
 .header a {
     color: white;
-    text-decoration: none;
     background: #dc2626;
     padding: 10px 16px;
+    text-decoration: none;
     border-radius: 5px;
 }
 
@@ -154,7 +109,7 @@ body {
     gap: 20px;
 }
 
-.card {
+.card, .section {
     background: white;
     padding: 25px;
     border-radius: 10px;
@@ -172,11 +127,7 @@ body {
 }
 
 .section {
-    background: white;
-    padding: 22px;
     margin-top: 25px;
-    border-radius: 10px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
 }
 
 .table-wrap {
@@ -213,6 +164,7 @@ th {
     <div>
         <h2>Student Hub Admin</h2>
         <p>Welcome, <?= htmlspecialchars($_SESSION['admin_name']) ?></p>
+        <small>Role: <?= htmlspecialchars($_SESSION['admin_role']) ?></small>
     </div>
 
     <a href="logout.php">Logout</a>
@@ -227,12 +179,10 @@ th {
     <div class="menu">
 
         <?php if ($_SESSION['admin_role'] === 'admin'): ?>
-
             <a href="dashboard.php">Dashboard</a>
             <a href="events.php">Manage Events</a>
             <a href="#registrations">Registrations</a>
             <a href="#audit">Audit Logs</a>
-
         <?php endif; ?>
 
     </div>
@@ -267,8 +217,34 @@ th {
 
         <h2>Latest Registrations</h2>
 
-        <?php displayRecords($latestRegistrations); ?>
+        <div class="table-wrap">
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Student Name</th>
+                <th>Event Name</th>
+                <th>Registration Date</th>
+            </tr>
 
+            <?php if ($latest && $latest->num_rows > 0): ?>
+
+                <?php while ($row = $latest->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row['id']) ?></td>
+                    <td><?= htmlspecialchars($row['student_name'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($row['event_title'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($row['registration_date']) ?></td>
+                </tr>
+                <?php endwhile; ?>
+
+            <?php else: ?>
+                <tr>
+                    <td colspan="4">No registrations available.</td>
+                </tr>
+            <?php endif; ?>
+
+        </table>
+        </div>
     </div>
 
     <!-- Audit Logs -->
@@ -276,8 +252,34 @@ th {
 
         <h2>Admin Activity / Audit Logs</h2>
 
-        <?php displayRecords($auditLogs); ?>
+        <div class="table-wrap">
+        <table>
+            <tr>
+                <th>Admin ID</th>
+                <th>Action</th>
+                <th>Details</th>
+                <th>Date & Time</th>
+            </tr>
 
+            <?php if ($logs && $logs->num_rows > 0): ?>
+
+                <?php while ($log = $logs->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($log['admin_id'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($log['action']) ?></td>
+                    <td><?= htmlspecialchars($log['details'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($log['created_at']) ?></td>
+                </tr>
+                <?php endwhile; ?>
+
+            <?php else: ?>
+                <tr>
+                    <td colspan="4">No audit logs available.</td>
+                </tr>
+            <?php endif; ?>
+
+        </table>
+        </div>
     </div>
 
 </div>

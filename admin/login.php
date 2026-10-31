@@ -1,15 +1,12 @@
 <?php
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
-
 require_once "../config/db.php";
 
-
-// Already logged in
-if (isset($_SESSION['admin_id'])) {
+if (isset($_SESSION['admin_id']) &&
+    ($_SESSION['admin_role'] ?? '') === 'admin') {
     header("Location: dashboard.php");
     exit();
 }
@@ -26,9 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
 
         $stmt = $conn->prepare(
-            "SELECT id, name, email, password
-             FROM admins
-             WHERE email = ?"
+            "SELECT id, name, email, password, role, status
+             FROM admins WHERE email = ?"
         );
 
         $stmt->bind_param("s", $email);
@@ -40,7 +36,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $admin = $result->fetch_assoc();
 
-            if (password_verify($password, $admin['password'])) {
+            if (
+                password_verify($password, $admin['password']) &&
+                strtolower($admin['role']) === 'admin' &&
+                $admin['status'] === 'Active'
+            ) {
 
                 session_regenerate_id(true);
 
@@ -49,11 +49,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['admin_email'] = $admin['email'];
                 $_SESSION['admin_role'] = 'admin';
 
+                // Save login activity
+                $action = "Admin Login";
+                $details = "Admin " . $admin['name'] . " logged in successfully.";
+
+                $log = $conn->prepare(
+                    "INSERT INTO audit_logs (admin_id, action, details)
+                     VALUES (?, ?, ?)"
+                );
+
+                $log->bind_param(
+                    "iss",
+                    $admin['id'],
+                    $action,
+                    $details
+                );
+
+                $log->execute();
+                $log->close();
+
                 header("Location: dashboard.php");
                 exit();
 
             } else {
-                $error = "Invalid email or password.";
+                $error = "Invalid credentials or inactive admin account.";
             }
 
         } else {
@@ -64,7 +83,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
