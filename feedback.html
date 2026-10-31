@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentHub | Feedback</title>
+</head>
+
+<body>
+
+<a href="#main-content">Skip to main content</a>
+
+<header>
+    <h1>StudentHub</h1>
+
+    <nav aria-label="Primary navigation">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="feedback.html" aria-current="page">Feedback</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main id="main-content">
+
+    <nav aria-label="Breadcrumb">
+        <ol>
+            <li><a href="index.html">Home</a></li>
+            <li aria-current="page">Feedback</li>
+        </ol>
+    </nav>
+
+    <section>
+        <h2>Student Feedback</h2>
+
+        <p>
+            Your feedback helps improve the StudentHub experience.
+        </p>
+
+        <form action="#" method="post">
+
+            <fieldset>
+                <legend>Feedback Information</legend>
+
+                <p>
+                    <label for="feedback-name">Name</label>
+                    <input
+                        type="text"
+                        id="feedback-name"
+                        name="name"
+                        required>
+                </p>
+
+                <p>
+                    <label for="feedback-email">Email</label>
+                    <input
+                        type="email"
+                        id="feedback-email"
+                        name="email"
+                        required>
+                </p>
+
+                <p>
+                    <label for="rating">Overall Rating</label>
+                    <select id="rating" name="rating" required>
+                        <option value="">Select Rating</option>
+                        <option value="5">Excellent</option>
+                        <option value="4">Very Good</option>
+                        <option value="3">Good</option>
+                        <option value="2">Needs Improvement</option>
+                        <option value="1">Poor</option>
+                    </select>
+                </p>
+
+                <p>
+                    <label for="feedback-message">
+                        Your Feedback
+                    </label>
+
+                    <textarea
+                        id="feedback-message"
+                        name="feedback"
+                        rows="6"
+                        cols="40"
+                        required></textarea>
+                </p>
+
+            </fieldset>
+
+            <button type="submit">Submit Feedback</button>
+            <button type="reset">Clear Form</button>
+
+        </form>
+
+    </section>
+
+</main>
+
+<footer>
+    <p>&copy; 2026 StudentHub. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
