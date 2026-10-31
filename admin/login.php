@@ -1,10 +1,9 @@
-
 <?php
 session_start();
 
 require_once "../config/db.php";
 
-// If already logged in, open dashboard
+// Already logged in
 if (isset($_SESSION['admin_id'])) {
     header("Location: dashboard.php");
     exit();
@@ -43,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['admin_id'] = $admin['id'];
                 $_SESSION['admin_name'] = $admin['name'];
                 $_SESSION['admin_email'] = $admin['email'];
+                $_SESSION['admin_role'] = 'admin';
 
                 header("Location: dashboard.php");
                 exit();
@@ -142,19 +142,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <form method="POST">
 
-        <input
-            type="email"
-            name="email"
-            placeholder="Admin Email"
-            required
-        >
+        <input type="email" name="email"
+               placeholder="Admin Email" required>
 
-        <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-        >
+        <input type="password" name="password"
+               placeholder="Password" required>
 
         <button type="submit">Login</button>
 
