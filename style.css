@@ -1,0 +1,193 @@
+
+/* StudentHub - Main CSS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f7fb;
+    color: #263238;
+    line-height: 1.6;
+}
+
+/* Header */
+header {
+    background: #123b66;
+    color: white;
+    padding: 25px 7%;
+}
+
+header h1 {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+header p {
+    color: #dbeafe;
+}
+
+/* Navigation */
+nav {
+    background: #ffffff;
+    padding: 14px 7%;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+nav ul li a {
+    color: #123b66;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+nav ul li a:hover {
+    color: #1684d8;
+}
+
+/* Main content */
+main {
+    width: 86%;
+    max-width: 1200px;
+    margin: 30px auto;
+    min-height: 65vh;
+}
+
+h2 {
+    color: #123b66;
+    margin: 20px 0 12px;
+}
+
+h3 {
+    color: #245783;
+    margin: 15px 0 8px;
+}
+
+p {
+    margin-bottom: 12px;
+}
+
+/* Sections and cards */
+section, article {
+    background: white;
+    padding: 24px;
+    margin: 20px 0;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+}
+
+section:hover, article:hover {
+    box-shadow: 0 5px 18px rgba(0,0,0,0.10);
+}
+
+/* Links and buttons */
+a {
+    color: #0878c9;
+}
+
+button, input[type="submit"] {
+    background: #0878c9;
+    color: white;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover, input[type="submit"]:hover {
+    background: #075a96;
+}
+
+/* Forms */
+form {
+    max-width: 650px;
+    margin: 20px auto;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 11px;
+    margin: 8px 0 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: 2px solid #80bfff;
+    border-color: #0878c9;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin: 20px 0;
+}
+
+th, td {
+    padding: 13px;
+    border: 1px solid #dce3eb;
+    text-align: left;
+}
+
+th {
+    background: #123b66;
+    color: white;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Footer */
+footer {
+    background: #123b66;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    header {
+        padding: 20px;
+    }
+
+    nav {
+        padding: 12px 20px;
+    }
+
+    nav ul {
+        gap: 12px;
+    }
+
+    main {
+        width: 92%;
+    }
+
+    section, article {
+        padding: 16px;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}
